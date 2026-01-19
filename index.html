@@ -489,9 +489,8 @@
                 <h3>AI_MENTOR_LOCALE</h3>
                 <div class="stat-line"><span>UZB:</span> <span>100%_NATIVE</span></div>
                 <div class="stat-line"><span>ENG:</span> <span>100%_INTL</span></div>
-                <p style="margin-top: 10px; font-size: 0.7rem; font-family: var(--font-main); color: #888;">
-                    The Cyber Mentor reads security logs to explain exactly "WHY" a threat was intercepted.
-                </p>
+                <p style="color: #444; margin-top: 10px; font-size: 0.7rem;">BUILD_ID: 2026.01.19.v1.2.2_STABLE | <a
+                        href="admin.html" style="color: #444; text-decoration: none;">ADMIN_PORTAL</a></p>
             </div>
         </aside>
     </div>
@@ -519,6 +518,13 @@
             "[AI] Gemini 1.5 Analysis: 'Heurid.Generic.Packed'",
             "[SUCCESS] Threat quarantined successfully."
         ];
+
+        // Keyboard Shortcut for Admin Portal (Ctrl + Shift + A)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                window.location.href = 'admin.html';
+            }
+        });
 
         const terminal = document.getElementById('log-terminal');
         let index = 0;
