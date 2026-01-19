@@ -10,6 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Space+Grotesk:wght@300;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #010204;
@@ -356,16 +357,16 @@
                 <div style="font-family: var(--font-mono);">
                     <span style="color: var(--accent);">PATH:</span> ROOT / STATISTICS / GLOBAL_REALTIME
                 </div>
-                <div style="font-family: var(--font-mono); font-size: 0.8rem;">
-                    <span class="blink" style="color: var(--success);">●</span> LIVE_SYNC: +24ms
+                <div id="db-status" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--warning);">
+                    <span class="blink">●</span> DATABASE_OFFLINE [MOCK_MODE]
                 </div>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <h4>TOTAL_DEPLOYMENTS</h4>
-                    <div class="value">1,204</div>
-                    <span class="trend">↑ 12% FROM LAST_PERIOD</span>
+                    <div class="value" id="stat-total">0</div>
+                    <span class="trend" id="stat-trend">INITIALIZING...</span>
                 </div>
                 <div class="stat-card" style="border-right-color: var(--secondary);">
                     <h4>HYBRID_AI_PULSE</h4>
@@ -446,7 +447,12 @@
     </div>
 
     <script>
-        // Set background image (replace with actual generated path)
+        // Supabase Configuration
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabaseClient = (SUPABASE_URL !== 'YOUR_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        // Set background image
         document.body.style.backgroundImage = "url('cyber_brother_admin_bg_1768798265830.png')";
 
         function checkAccess() {
@@ -456,7 +462,7 @@
                 setTimeout(() => {
                     document.getElementById('login-overlay').style.display = 'none';
                     document.getElementById('main-dash').classList.add('active');
-                    startSimulation();
+                    initializeDashboard();
                 }, 500);
             } else {
                 document.getElementById('error-msg').style.display = 'block';
@@ -464,7 +470,53 @@
             }
         }
 
-        // --- Mock Data Simulation ---
+        async function initializeDashboard() {
+            if (supabaseClient) {
+                document.getElementById('db-status').style.color = 'var(--success)';
+                document.getElementById('db-status').innerHTML = '<span class="blink">●</span> DATABASE_ONLINE [REALTIME]';
+                fetchRealData();
+                // Listen for real-time changes
+                supabaseClient
+                    .channel('schema-db-changes')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'downloads' }, payload => {
+                        addNewRow(payload.new);
+                        updateTotalCount();
+                    })
+                    .subscribe();
+            } else {
+                startSimulation();
+            }
+        }
+
+        async function fetchRealData() {
+            const { data, count, error } = await supabaseClient
+                .from('downloads')
+                .select('*', { count: 'exact' })
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (!error) {
+                document.getElementById('stat-total').innerText = count;
+                document.getElementById('stat-trend').innerText = `TOTAL_RECORDS_SYNCED`;
+                logBody.innerHTML = '';
+                data.forEach(item => addNewRow(item));
+            }
+        }
+
+        function addNewRow(item) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>#${item.id.toString().substring(0, 8)}</td>
+                <td>${item.platform || 'UNKNOWN'}</td>
+                <td>${item.location || 'GLOBAL'}</td>
+                <td><span class="status-pill pill-success">${item.status}</span></td>
+                <td>${new Date(item.created_at || Date.now()).toLocaleTimeString()}</td>
+            `;
+            logBody.prepend(row);
+            if (logBody.children.length > 8) logBody.removeChild(logBody.lastChild);
+        }
+
+        // --- Mock Data Simulation (Fallback) ---
         const platforms = ['Android 14', 'Android 13', 'Android 12', 'Android 11'];
         const zones = ['UZB-TASHKENT', 'UZB-SAMARKAND', 'USA-NY', 'GER-BERLIN', 'JPN-TOKYO'];
         const logBody = document.getElementById('log-body');

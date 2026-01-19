@@ -10,6 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Space+Grotesk:wght@300;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #020408;
@@ -373,7 +374,8 @@
         </div>
         <div style="display: flex; gap: 20px;">
             <div class="status-badge"><span class="blink">●</span> AI_CORE_SYNCED</div>
-            <a href="cyber-brother-v1.2.2.apk" download class="btn-cyber" style="padding: 8px 20px;">Download_APK</a>
+            <a href="cyber-brother-v1.2.2.apk" onclick="trackDownload('Top_Nav')" download class="btn-cyber"
+                style="padding: 8px 20px;">Download_APK</a>
         </div>
     </nav>
 
@@ -417,7 +419,8 @@
                     <p style="color: var(--accent); letter-spacing: 2px; font-family: var(--font-mono);">HYBRID AI
                         SECURITY ECOSYSTEM</p>
                     <div style="margin-top: 30px;">
-                        <a href="cyber-brother-v1.2.2.apk" download class="btn-cyber">INITIALIZE_SHIELD_DOWNLOAD</a>
+                        <a href="cyber-brother-v1.2.2.apk" onclick="trackDownload('Hero_Center')" download
+                            class="btn-cyber">INITIALIZE_SHIELD_DOWNLOAD</a>
                     </div>
                 </div>
             </div>
@@ -542,6 +545,33 @@
             }
 
             setTimeout(addLog, Math.random() * 2000 + 500);
+        }
+
+        // Supabase Configuration (User needs to fill these in)
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = (SUPABASE_URL !== 'YOUR_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        async function trackDownload(location) {
+            console.log(`[TELEMETRY] Download initiated from: ${location}`);
+
+            if (!supabase) return;
+
+            try {
+                const { error } = await supabase
+                    .from('downloads')
+                    .insert([
+                        {
+                            platform: navigator.platform,
+                            location: location,
+                            status: 'SUCCESS',
+                            user_agent: navigator.userAgent
+                        }
+                    ]);
+                if (error) throw error;
+            } catch (err) {
+                console.error('Telemetry Error:', err.message);
+            }
         }
 
         setTimeout(addLog, 1000);
