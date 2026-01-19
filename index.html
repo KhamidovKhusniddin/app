@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER BROTHER | SECURE COMMAND CENTER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Space+Grotesk:wght@300;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020408;
+            --accent: #00f2ff;
+            --accent-dim: rgba(0, 242, 255, 0.2);
+            --secondary: #7000ff;
+            --warning: #ff3e3e;
+            --success: #00ff9d;
+            --border: rgba(0, 242, 255, 0.15);
+            --glass: rgba(10, 15, 25, 0.85);
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-main: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--accent);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            min-height: 100vh;
+        }
+
+        /* --- Scanline Animation --- */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.15;
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent);
+            opacity: 0.1;
+            z-index: 10000;
+            animation: scan 10s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* --- UI Elements --- */
+        .hud-border {
+            border: 1px solid var(--accent);
+            position: relative;
+            padding: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+        }
+
+        .hud-border::before,
+        .hud-border::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid var(--accent);
+        }
+
+        .hud-border-tl::before {
+            top: -2px;
+            left: -2px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .hud-border-tl::after {
+            top: -2px;
+            right: -2px;
+            border-left: 0;
+            border-bottom: 0;
+        }
+
+        .hud-footer::before {
+            bottom: -2px;
+            left: -2px;
+            border-right: 0;
+            border-top: 0;
+        }
+
+        .hud-footer::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .btn-cyber {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 12px 30px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-cyber:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        /* --- Layout --- */
+        nav {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(2, 4, 8, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--success);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 20px;
+            padding: 20px 5%;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* --- Sidebar Panels --- */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tech-card {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .tech-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+            color: var(--secondary);
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .stat-line span:last-child {
+            color: #fff;
+        }
+
+        /* --- Central Interface --- */
+        .center-interface {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hero-viewport {
+            height: 400px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .hero-viewport img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            filter: hue-rotate(10deg) brightness(0.8);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 60%, var(--bg));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .hero-overlay h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent);
+            margin-bottom: 10px;
+        }
+
+        /* --- Tech Grid --- */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .spec-box {
+            padding: 20px;
+        }
+
+        .spec-box h4 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spec-box ul {
+            list-style: none;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .spec-box li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .spec-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        /* --- Log Terminal --- */
+        .terminal {
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            height: 200px;
+            overflow-y: hidden;
+            color: var(--success);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: 'SYSTEM_PROTECTION_LOGS';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--bg);
+            padding: 0 5px;
+            font-size: 0.6rem;
+            color: var(--accent);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        /* --- Floating Elements --- */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 15px;
+            border: 1px solid var(--success);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--success);
+        }
+
+        .blink {
+            animation: blink 1s steps(1) infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .side-panel {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scan-line"></div>
+
+    <nav>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            CYBER_BROTHER_v1.2.2 <span>[OPERATIONAL]</span>
+        </div>
+        <div style="display: flex; gap: 20px;">
+            <div class="status-badge"><span class="blink">●</span> AI_CORE_SYNCED</div>
+            <a href="cyber-brother-v1.2.2.apk" download class="btn-cyber" style="padding: 8px 20px;">Download_APK</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Left Panel: Core Specs -->
+        <aside class="side-panel">
+            <div class="hud-border hud-border-tl tech-card">
+                <h3>SYSTEM_IDENTITY</h3>
+                <div class="stat-line"><span>CODENAME:</span> <span>HACKDEFENDER</span></div>
+                <div class="stat-line"><span>MISSION:</span> <span>PROACTIVE_DEFENSE</span></div>
+                <div class="stat-line"><span>REGION:</span> <span>UZB_MARKET</span></div>
+                <div class="stat-line"><span>MIN_SDK:</span> <span>26 (Oreo)</span></div>
+                <div class="stat-line"><span>TARGET_SDK:</span> <span>34 (Android 14)</span></div>
+            </div>
+
+            <div class="hud-border hud-border-tl tech-card">
+                <h3>STUB_ARCHITECTURE</h3>
+                <div class="stat-line"><span>PATTERN:</span> <span>MVVM</span></div>
+                <div class="stat-line"><span>LANGUAGE:</span> <span>KOTLIN 1.9+</span></div>
+                <div class="stat-line"><span>UI_ENGINE:</span> <span>JETPACK_COMPOSE</span></div>
+                <div class="stat-line"><span>DI_FRAMEWORK:</span> <span>HILT / DAGGER</span></div>
+                <div class="stat-line"><span>PERSISTENCE:</span> <span>ROOM_DB</span></div>
+            </div>
+
+            <div class="hud-border hud-border-tl tech-card">
+                <h3>AI_LAYER_DETAILS</h3>
+                <div class="stat-line"><span>OFFLINE:</span> <span>MobileBERT</span></div>
+                <div class="stat-line"><span>CLOUD:</span> <span>Gemini Pro 1.5</span></div>
+                <div style="margin-top: 10px; color: var(--accent); font-size: 0.7rem;">
+                    * 100% Privacy-preserving local analysis.
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Command Interface -->
+        <main class="center-interface">
+            <div class="hud-border hud-border-tl hero-viewport">
+                <img src="cyber_brother_tech_hud_1768796818955.png" alt="Command Center View">
+                <div class="hero-overlay">
+                    <h1>CYBER BROTHER</h1>
+                    <p style="color: var(--accent); letter-spacing: 2px; font-family: var(--font-mono);">HYBRID AI
+                        SECURITY ECOSYSTEM</p>
+                    <div style="margin-top: 30px;">
+                        <a href="cyber-brother-v1.2.2.apk" download class="btn-cyber">INITIALIZE_SHIELD_DOWNLOAD</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-border hud-border-tl spec-box"
+                style="background: rgba(255, 62, 62, 0.05); border-color: var(--warning);">
+                <h4 style="color: var(--warning);">⚠️ DEPLOYMENT_INSTRUCTIONS</h4>
+                <ul style="color: #ff9999;">
+                    <li>Step 1: Download the .APK package to your Android device.</li>
+                    <li>Step 2: Enable "Install from Unknown Sources" in System Settings.</li>
+                    <li>Step 3: Execute the binary and approve AI Security Permissions.</li>
+                    <li>Note: This is a professional-grade security tool. Ensure device compatibility.</li>
+                </ul>
+            </div>
+
+            <div class="specs-grid">
+                <div class="hud-border hud-border-tl spec-box">
+                    <h4>🔍 APP_XRAY_AUDIT</h4>
+                    <ul>
+                        <li>Action: 150+ Permission Analysis</li>
+                        <li>Logic: Intercept ACTION_PACKAGE_ADDED</li>
+                        <li>Scoring: 0-100% Risk Magnitude</li>
+                        <li>Feature: Real-time APK Metadata Static Scan</li>
+                        <li>Mitigation: One-click "Uninstall" workflow</li>
+                    </ul>
+                </div>
+                <div class="hud-border hud-border-tl spec-box">
+                    <h4>📁 FILE_GUARD_PRO</h4>
+                    <ul>
+                        <li>Observer: Local /sdcard/Download Monitor</li>
+                        <li>Math: Shannon Entropy Calculation</li>
+                        <li>Verification: MD5/SHA256 Hash Matching</li>
+                        <li>Deep: Android Executable (DEX) Feature Extraction</li>
+                        <li>Status: Instant Malware Quarantine</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="terminal" id="log-terminal">
+                <!-- JavaScript will populate this -->
+            </div>
+        </main>
+
+        <!-- Right Panel: Network & Activity -->
+        <aside class="side-panel">
+            <div class="hud-border hud-border-tl tech-card">
+                <h3>NETWORK_SHIELD</h3>
+                <div class="stat-line"><span>SERVICE:</span> <span>VpnService</span></div>
+                <div class="stat-line"><span>FILTER:</span> <span>DNS_QUERY_LEVEL</span></div>
+                <div class="stat-line"><span>PROTOCOL:</span> <span>HTTP_HTTPS_HEADER</span></div>
+                <div class="stat-line"><span>DRAIN:</span> <span>0%_EXTERNAL_LEAK</span></div>
+                <div
+                    style="margin-top: 10px; height: 100px; border: 1px solid var(--border); position: relative; background: radial-gradient(circle at center, var(--accent-dim), transparent);">
+                    <div
+                        style="position: absolute; bottom: 0; width: 100%; height: 60%; background: linear-gradient(transparent, var(--accent-dim));">
+                    </div>
+                    <p style="text-align: center; font-size: 0.6rem; margin-top: 40px;">TRAFFIC_ANALYSIS_ACTIVE</p>
+                </div>
+            </div>
+
+            <div class="hud-border hud-border-tl tech-card">
+                <h3>SECURITY_STABILITY</h3>
+                <div class="stat-line"><span>PERSISTENCE:</span> <span>START_STICKY</span></div>
+                <div class="stat-line"><span>RECOVERY:</span> <span>BootReceiver_AUTO</span></div>
+                <div class="stat-line"><span>STABILITY:</span> <span>WorkManager_CORE</span></div>
+            </div>
+
+            <div class="hud-border hud-border-tl tech-card" style="flex-grow: 1;">
+                <h3>AI_MENTOR_LOCALE</h3>
+                <div class="stat-line"><span>UZB:</span> <span>100%_NATIVE</span></div>
+                <div class="stat-line"><span>ENG:</span> <span>100%_INTL</span></div>
+                <p style="margin-top: 10px; font-size: 0.7rem; font-family: var(--font-main); color: #888;">
+                    The Cyber Mentor reads security logs to explain exactly "WHY" a threat was intercepted.
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <footer
+        style="padding: 40px 5%; border-top: 1px solid var(--border); text-align: center; font-family: var(--font-mono); font-size: 0.7rem;">
+        <p>REVISION_001 // REVISION_DATE: 2026.01.19 // STATUS: SECURE</p>
+        <p style="margin-top: 10px; color: #444;">&copy; CYBER_BROTHER RESEARCH GROUP // ZERO_TRUST_POLICY_ENABLED</p>
+    </footer>
+
+    <script>
+        const logs = [
+            "[INFO] Initializing Cyber Brother Core...",
+            "[SYSTEM] VpnService bound to port 53",
+            "[AI] MobileBERT model loaded successfully",
+            "[SCAN] Watching /sdcard/Download directory",
+            "[INFO] Secure baseline established. 0 threats detected.",
+            "[NETWORK] DNS filtering active for 1,402 dangerous domains",
+            "[SCAN] Analyzing new APK: 'unknown_social_app.apk'",
+            "[WARNING] Permissions detected: [SMS, OVERLAY, CAMERA_PREVIEW]",
+            "[AI] Risk Score calculated: 84% [HIGH]",
+            "[SYSTEM] Actionable notification sent to user.",
+            "[INFO] Waiting for user choice...",
+            "[FILE] Shannon Entropy Check: 7.92 (High Entropy detected)",
+            "[AI] Gemini 1.5 Analysis: 'Heurid.Generic.Packed'",
+            "[SUCCESS] Threat quarantined successfully."
+        ];
+
+        const terminal = document.getElementById('log-terminal');
+        let index = 0;
+
+        function addLog() {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `> ${new Date().toLocaleTimeString()} ${logs[index % logs.length]}`;
+            terminal.appendChild(entry);
+            terminal.scrollTop = terminal.scrollHeight;
+            index++;
+
+            if (terminal.children.length > 20) {
+                terminal.removeChild(terminal.firstChild);
+            }
+
+            setTimeout(addLog, Math.random() * 2000 + 500);
+        }
+
+        setTimeout(addLog, 1000);
+    </script>
+</body>
+
+</html>
